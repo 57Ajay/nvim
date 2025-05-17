@@ -64,7 +64,7 @@ local function toggle_diagnostics()
         -- Open the diagnostics in a new window
         vim.diagnostic.setloclist()
         diagnostics_active = true
-        
+
         -- Create an autocommand to allow copying to system clipboard from this window
         vim.api.nvim_create_autocmd("FileType", {
             group = diagnostics_augroup,
@@ -72,7 +72,7 @@ local function toggle_diagnostics()
             callback = function()
                 -- Enable copying to clipboard in the diagnostics window
                 vim.opt_local.clipboard = "unnamedplus"
-                
+
                 -- Add a key mapping to close the window
                 vim.keymap.set("n", "q", ":pclose<CR>", { buffer = true, noremap = true, silent = true })
             end,
@@ -86,3 +86,13 @@ keymap("n", "<leader>xx", toggle_diagnostics, { desc = "Toggle diagnostics windo
 keymap("n", "[d", vim.diagnostic.goto_prev, { desc = "Go to previous diagnostic" })
 keymap("n", "]d", vim.diagnostic.goto_next, { desc = "Go to next diagnostic" })
 keymap("n", "<leader>xd", vim.diagnostic.open_float, { desc = "Show diagnostic under cursor" })
+
+
+-- Move current line/selection down
+vim.keymap.set("n", "<A-j>", ":m .+1<CR>==", { noremap = true, silent = true, desc = "Move current line down" })
+vim.keymap.set("v", "<A-j>", ":m '>+1<CR>gv=gv", { noremap = true, silent = true, desc = "Move selection down" })
+
+-- Move current line/selection up
+vim.keymap.set("n", "<A-k>", ":m .-2<CR>==", { noremap = true, silent = true, desc = "Move current line up" })
+vim.keymap.set("v", "<A-k>", ":m '<-2<CR>gv=gv", { noremap = true, silent = true, desc = "Move selection up" })
+
