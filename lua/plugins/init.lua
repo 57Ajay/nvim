@@ -17,6 +17,7 @@ vim.opt.rtp:prepend(lazypath)
 -- Configure and initialize lazy.nvim
 require("lazy").setup({
     -- Telescope (for better navigation)
+    {import = "plugins/configs.git"},
     {
         'nvim-telescope/telescope.nvim',
         tag = '0.1.4', -- Adjust version as needed

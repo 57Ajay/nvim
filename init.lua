@@ -6,3 +6,5 @@ require('core.autocmds')
 
 -- Load plugins
 require('plugins')
+
+vim.opt.wrap = true

@@ -49,6 +49,11 @@ for i = 1, 9 do
     keymap("n", "<leader>L" .. i, i .. "gt", { desc = "Go to tab " .. i })
 end
 
+-- Git keymaps (Global)
+keymap("n", "<leader>gg", ":lua require('gitsigns').blame_line{full=true}<CR>", { desc = "Git blame line" })
+keymap("n", "<leader>gB", ":lua require('gitsigns').toggle_current_line_blame()<CR>", { desc = "Toggle git blame" })
+
+
 -- Diagnostics (error window)
 -- Toggle diagnostics list for errors and warnings
 local diagnostics_active = false
