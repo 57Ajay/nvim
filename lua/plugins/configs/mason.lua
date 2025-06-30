@@ -9,12 +9,6 @@ require("mason").setup({
     }
 })
 
-require("mason-lspconfig").setup({
-    -- Automatically install LSPs configured via lspconfig
-    automatic_installation = true,
-    ensure_installed = {},
-})
-
 -- Enhanced LSP keymappings (similar to LazyVim)
 local on_attach = function(client, bufnr)
     -- Enable completion triggered by <c-x><c-o>
@@ -71,17 +65,36 @@ local on_attach = function(client, bufnr)
     vim.keymap.set('n', '<leader>f', function() vim.lsp.buf.format { async = true } end, vim.tbl_extend("force", bufopts, { desc = "Format document" }))
 end
 
--- Configure LSP servers
-local lspconfig = require('lspconfig')
+-- Get LSP capabilities
 local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
--- Setup LSPs manually for now
--- This is a more reliable approach than using setup_handlers
-local servers = require("mason-lspconfig").get_installed_servers()
+-- Configure mason-lspconfig
+require("mason-lspconfig").setup({
+    -- Automatically install LSPs when they're configured
+    automatic_installation = true,
+    ensure_installed = {},
+    -- Set up handlers for automatic LSP configuration
+    handlers = {
+        -- Default handler for all servers
+        function(server_name)
+            require("lspconfig")[server_name].setup({
+                on_attach = on_attach,
+                capabilities = capabilities,
+            })
+        end,
+    },
+})
 
-for _, server_name in ipairs(servers) do
-    lspconfig[server_name].setup({
-        on_attach = on_attach,
-        capabilities = capabilities,
-    })
-end
+-- Optional: Add a command to check active LSP clients
+vim.api.nvim_create_user_command("LspInfo", function()
+    local clients = vim.lsp.get_active_clients()
+    if #clients == 0 then
+        print("No active LSP clients")
+        return
+    end
+
+    print("Active LSP clients:")
+    for _, client in ipairs(clients) do
+        print("  - " .. client.name .. " (ID: " .. client.id .. ")")
+    end
+end, { desc = "Show active LSP clients" })
