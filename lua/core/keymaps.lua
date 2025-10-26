@@ -110,3 +110,6 @@ keymap("n", "<leader>qq", function()
   }, "l", true, true)
 end, { desc = "Insert Go err check" })
 
+-- Insert mode navigation with Insert key
+keymap("i", "<Insert>", "<Right>", { desc = "Move right in insert mode" })
+keymap("i", "<C-Insert>", "<Down>", { desc = "Move down in insert mode" })
