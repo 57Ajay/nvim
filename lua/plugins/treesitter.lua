@@ -1,13 +1,9 @@
--- ~/.config/nvim/lua/plugins/treesitter.lua
---
--- Version-aware: nvim-treesitter's `master` and `main` branches are mutually
--- incompatible, and each only works on one Neovim line:
---   * Neovim 0.11  -> `master` (locked, but works)
---   * Neovim 0.12+ -> `main`   (the rewrite; `master` CRASHES on 0.12, e.g.
---                               "attempt to call method 'range' (a nil value)"
---                               and breaks LSP-hover markdown rendering)
--- This file detects the running Neovim and loads the correct branch, so the
--- same config works on your 0.11 laptop and your 0.12 VM unchanged.
+-- if there is issue with tree-sitter then run following command to install it
+------------------------------------------------------------------------------------
+-- mkdir -p ~/.local/bin
+-- curl -L https://github.com/tree-sitter/tree-sitter/releases/latest/download/tree-sitter-linux-x64.gz \
+--   | gunzip > ~/.local/bin/tree-sitter
+-- chmod +x ~/.local/bin/tree-sitter
 
 local langs = {
     "lua", "vim", "vimdoc", "query",
