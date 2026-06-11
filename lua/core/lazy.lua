@@ -1,8 +1,8 @@
 -- ~/.config/nvim/lua/core/lazy.lua
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 
--- Bootstrap lazy.nvim (vim.uv with vim.loop fallback)
-if not (vim.uv or vim.loop).fs_stat(lazypath) then
+-- Bootstrap lazy.nvim
+if not vim.uv.fs_stat(lazypath) then
     vim.fn.system({
         "git",
         "clone",
@@ -18,8 +18,15 @@ vim.opt.rtp:prepend(lazypath)
 require("lazy").setup({
     { import = "plugins" },
 }, {
+    install = { colorscheme = { "tokyonight" } }, -- used during fresh `Lazy sync`
     checker = { enabled = true, notify = false }, -- background update checks
     rocks = { enabled = false },
     change_detection = { notify = false },
     ui = { border = "rounded" },
+    performance = {
+        rtp = {
+            -- NOTE: netrwPlugin is deliberately NOT in this list — you use netrw.
+            disabled_plugins = { "gzip", "tarPlugin", "tohtml", "tutor", "zipPlugin" },
+        },
+    },
 })

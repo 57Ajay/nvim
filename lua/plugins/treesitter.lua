@@ -1,9 +1,13 @@
--- if there is issue with tree-sitter then run following command to install it
-------------------------------------------------------------------------------------
--- mkdir -p ~/.local/bin
--- curl -L https://github.com/tree-sitter/tree-sitter/releases/latest/download/tree-sitter-linux-x64.gz \
---   | gunzip > ~/.local/bin/tree-sitter
--- chmod +x ~/.local/bin/tree-sitter
+-- ~/.config/nvim/lua/plugins/treesitter.lua
+-- nvim-treesitter `main` branch ONLY. The frozen `master` branch does not work
+-- on Neovim 0.12+, so the old dual-version logic is gone.
+--
+-- One-time requirements on each machine (checked by :checkhealth nvim-treesitter):
+--   * tree-sitter CLI >= 0.26.1 (NOT the npm package):
+--       mkdir -p ~/.local/bin
+--       curl -L https://github.com/tree-sitter/tree-sitter/releases/latest/download/tree-sitter-linux-x64.gz \
+--         | gunzip > ~/.local/bin/tree-sitter && chmod +x ~/.local/bin/tree-sitter
+--   * a C compiler (gcc/clang) and curl on $PATH
 
 local langs = {
     "lua", "vim", "vimdoc", "query",
@@ -11,70 +15,14 @@ local langs = {
     "typescript", "tsx", "javascript",
     "rust", "python", "zig",
     "c", "cpp",
-    "json", "jsonc", "yaml", "toml",
+    -- NOTE: no "jsonc" here — the main branch has no separate jsonc parser;
+    -- jsonc buffers automatically use the json parser (get_lang("jsonc") == "json").
+    "json", "yaml", "toml",
     "markdown", "markdown_inline",
     "bash", "html", "css",
     "diff", "gitcommit", "git_rebase",
 }
 
-----------------------------------------------------------------------
--- Neovim 0.11: master branch (your laptop)
-----------------------------------------------------------------------
-if vim.fn.has("nvim-0.12") == 0 then
-    return {
-        {
-            "nvim-treesitter/nvim-treesitter",
-            branch = "master",
-            lazy = false,
-            build = ":TSUpdate",
-            dependencies = {
-                { "nvim-treesitter/nvim-treesitter-textobjects", branch = "master" },
-            },
-            config = function()
-                require("nvim-treesitter.configs").setup({
-                    ensure_installed = langs,
-                    auto_install = true,
-                    highlight = { enable = true },
-                    indent = { enable = true },
-                    incremental_selection = {
-                        enable = true,
-                        keymaps = {
-                            init_selection = "<C-space>",
-                            node_incremental = "<C-space>",
-                            node_decremental = "<bs>",
-                            scope_incremental = false,
-                        },
-                    },
-                    textobjects = {
-                        select = {
-                            enable = true,
-                            lookahead = true,
-                            keymaps = {
-                                ["af"] = "@function.outer",
-                                ["if"] = "@function.inner",
-                                ["ac"] = "@class.outer",
-                                ["ic"] = "@class.inner",
-                                ["aa"] = "@parameter.outer",
-                                ["ia"] = "@parameter.inner",
-                            },
-                        },
-                        move = {
-                            enable = true,
-                            set_jumps = true,
-                            goto_next_start = { ["]f"] = "@function.outer", ["]a"] = "@parameter.inner" },
-                            goto_previous_start = { ["[f"] = "@function.outer", ["[a"] = "@parameter.inner" },
-                        },
-                    },
-                })
-            end,
-        },
-    }
-end
-
-----------------------------------------------------------------------
--- Neovim 0.12+: main branch (your VM)
--- The rewrite does NOT auto-enable highlighting/indent; we start it per buffer.
-----------------------------------------------------------------------
 return {
     {
         "nvim-treesitter/nvim-treesitter",
@@ -85,7 +33,7 @@ return {
             -- Install parsers (async; no-op if already present).
             require("nvim-treesitter").install(langs)
 
-            -- Start highlighting + indentation for a buffer.
+            -- The rewrite does NOT auto-enable highlighting/indent; start per buffer.
             local function attach(buf)
                 local ft = vim.bo[buf].filetype
                 local lang = vim.treesitter.language.get_lang(ft)
@@ -113,8 +61,7 @@ return {
         end,
     },
 
-    -- Text objects on the main branch use an explicit setup + keymaps.
-    -- Wrapped so a future API tweak can't take highlighting down with it.
+    -- Text objects (main branch): explicit setup + keymaps.
     {
         "nvim-treesitter/nvim-treesitter-textobjects",
         branch = "main",

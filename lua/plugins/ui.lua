@@ -1,6 +1,6 @@
 -- ~/.config/nvim/lua/plugins/ui.lua
 return {
-    -- Colorscheme (swap to "catppuccin", "kanagawa", etc. if you prefer — see GUIDE.md).
+    -- Colorscheme (swap to "catppuccin", "kanagawa", etc. if you prefer).
     {
         "folke/tokyonight.nvim",
         priority = 1000,

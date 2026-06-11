@@ -4,7 +4,7 @@ local autocmd = vim.api.nvim_create_autocmd
 
 local general = augroup("General", { clear = true })
 
--- Highlight on yank (vim.hl replaces deprecated vim.highlight in 0.11+)
+-- Highlight on yank (vim.hl replaces deprecated vim.highlight)
 autocmd("TextYankPost", {
     group = general,
     callback = function()
@@ -25,6 +25,31 @@ autocmd("BufReadPost", {
         if mark[1] > 0 and mark[1] <= line_count then
             pcall(vim.api.nvim_win_set_cursor, 0, mark)
         end
+    end,
+})
+
+-- Auto-create missing parent directories when saving a new file
+-- (`:e foo/bar/baz.lua` then `:w` just works)
+autocmd("BufWritePre", {
+    group = general,
+    callback = function(args)
+        if args.match:match("^%w+://") then
+            return -- skip URL-style buffers (fugitive://, scp://, ...)
+        end
+        local dir = vim.fn.fnamemodify(args.match, ":p:h")
+        if vim.fn.isdirectory(dir) == 0 then
+            vim.fn.mkdir(dir, "p")
+        end
+    end,
+})
+
+-- Close utility windows with just `q`
+autocmd("FileType", {
+    group = general,
+    pattern = { "help", "man", "qf", "checkhealth", "startuptime" },
+    callback = function(args)
+        vim.bo[args.buf].buflisted = false
+        vim.keymap.set("n", "q", "<cmd>close<cr>", { buffer = args.buf, silent = true, desc = "Close window" })
     end,
 })
 

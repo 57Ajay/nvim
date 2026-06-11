@@ -24,14 +24,24 @@ opt.signcolumn = "yes"
 opt.cursorline = true
 opt.scrolloff = 8
 opt.sidescrolloff = 8
-opt.winborder = "rounded" -- Neovim 0.11+: default border for hover/float windows
+opt.winborder = "rounded" -- default border for hover/float windows (0.11+)
+
+-- Folding: treesitter-powered, with everything open by default.
+-- zc/zo to close/open a fold, za to toggle, zM/zR close/open all.
+opt.foldmethod = "expr"
+opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+opt.foldlevel = 99
+opt.foldtext = "" -- show the first line of the fold with its normal highlighting
 
 -- Behavior
 opt.hidden = true
 opt.splitbelow = true
 opt.splitright = true
-opt.wrap = true -- you had this turned on in init.lua; kept it here
+opt.splitkeep = "screen" -- don't shift visible text when opening/closing splits
+opt.wrap = true
 opt.linebreak = true -- when wrap is on, break at word boundaries, not mid-word
+opt.confirm = true -- prompt to save instead of failing :q / :bd on unsaved changes
+opt.virtualedit = "block" -- in Visual Block, cursor can move past line ends
 opt.backup = false
 opt.swapfile = false
 opt.undofile = true

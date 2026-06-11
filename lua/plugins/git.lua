@@ -25,7 +25,7 @@ return {
                 map("n", "]h", function() gs.nav_hunk("next") end, "Next git hunk")
                 map("n", "[h", function() gs.nav_hunk("prev") end, "Prev git hunk")
 
-                -- Hunk actions (stage_hunk toggles stage/unstage in current gitsigns)
+                -- Hunk actions (stage_hunk toggles stage/unstage)
                 map({ "n", "v" }, "<leader>ga", gs.stage_hunk, "Git stage/unstage hunk")
                 map({ "n", "v" }, "<leader>gr", gs.reset_hunk, "Git reset hunk")
                 map("n", "<leader>gp", gs.preview_hunk, "Git preview hunk")

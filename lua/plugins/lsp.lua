@@ -1,13 +1,13 @@
 -- ~/.config/nvim/lua/plugins/lsp.lua
--- Neovim 0.11+ LSP. No more mason-lspconfig `handlers`; servers are configured
--- with vim.lsp.config() and activated with vim.lsp.enable() (mason-lspconfig
--- does the enabling automatically for installed servers).
+-- Servers are configured with vim.lsp.config() and activated with
+-- vim.lsp.enable() (mason-lspconfig does the enabling for installed servers).
+-- nvim-lspconfig is kept purely as the data source of per-server defaults.
 return {
     {
         "neovim/nvim-lspconfig",
         event = { "BufReadPre", "BufNewFile" },
         dependencies = {
-            { "mason-org/mason.nvim", opts = {} }, -- note: org moved from williamboman -> mason-org
+            { "mason-org/mason.nvim", opts = {} },
             "mason-org/mason-lspconfig.nvim",
             "saghen/blink.cmp",
         },
@@ -72,6 +72,13 @@ return {
                 group = vim.api.nvim_create_augroup("UserLspAttach", { clear = true }),
                 callback = function(ev)
                     local buf = ev.buf
+                    local client = vim.lsp.get_client_by_id(ev.data.client_id)
+
+                    -- pyright owns hover docs; ruff stays for lint + fixes.
+                    if client and client.name == "ruff" then
+                        client.server_capabilities.hoverProvider = false
+                    end
+
                     local function map(keys, fn, desc)
                         vim.keymap.set("n", keys, fn, { buffer = buf, desc = "LSP: " .. desc })
                     end
@@ -86,11 +93,24 @@ return {
                     map("K", vim.lsp.buf.hover, "Hover docs")
                     map("<leader>rn", vim.lsp.buf.rename, "Rename symbol")
                     map("<leader>ca", vim.lsp.buf.code_action, "Code action")
-                    -- (Document formatting is <leader>f, provided by conform.nvim.)
-                    -- (Signature help is <C-s> in insert mode, a Neovim 0.11 default —
+                    -- (Document formatting is <leader>f via conform.nvim.)
+                    -- (Signature help is <C-s> in insert mode, a 0.11+ default —
                     --  this avoids clobbering your <C-k> window-up keymap.)
                 end,
             })
         end,
+    },
+
+    -- Auto-install formatter binaries used by conform.nvim, so format-on-save
+    -- works out of the box. (gofmt/rustfmt/zigfmt/ruff come with toolchains.)
+    {
+        "WhoIsSethDaniel/mason-tool-installer.nvim",
+        dependencies = { "mason-org/mason.nvim" },
+        event = "VeryLazy",
+        opts = {
+            ensure_installed = { "stylua", "shfmt", "prettierd", "goimports" },
+            run_on_start = true,
+            start_delay = 3000, -- don't compete with startup
+        },
     },
 }

@@ -38,7 +38,7 @@ return {
         },
     },
 
-    -- Diagnostics / quickfix / symbols list (replaces your custom <leader>xx toggle).
+    -- Diagnostics / quickfix / symbols lists.
     {
         "folke/trouble.nvim",
         cmd = "Trouble",
@@ -74,10 +74,16 @@ return {
         opts = {
             preset = "modern",
             spec = {
+                { "<leader>d", group = "debug" },
                 { "<leader>f", group = "find / format" },
                 { "<leader>g", group = "git" },
+                { "<leader>q", group = "quit / session" },
+                { "<leader>s", group = "search / replace" },
+                { "<leader>t", group = "test" },
+                { "<leader>u", group = "ui toggles" },
                 { "<leader>x", group = "diagnostics / lists" },
                 { "<leader>L", group = "tabs" },
+                { "gs", group = "surround", mode = { "n", "x" } },
             },
         },
     },

@@ -55,7 +55,7 @@ for i = 1, 9 do
     keymap("n", "<leader>L" .. i, i .. "gt", { desc = "Go to tab " .. i })
 end
 
--- Diagnostics (non-deprecated 0.11 API; replaces vim.diagnostic.goto_prev/goto_next)
+-- Diagnostics (non-deprecated API; replaces vim.diagnostic.goto_prev/goto_next)
 keymap("n", "]d", function() vim.diagnostic.jump({ count = 1, float = true }) end, { desc = "Next diagnostic" })
 keymap("n", "[d", function() vim.diagnostic.jump({ count = -1, float = true }) end, { desc = "Prev diagnostic" })
 keymap("n", "<leader>xd", vim.diagnostic.open_float, { desc = "Show diagnostic under cursor" })

@@ -1,15 +1,16 @@
 -- ~/.config/nvim/lua/plugins/completion.lua
--- blink.cmp replaces nvim-cmp + LuaSnip + the cmp-* sources with one fast,
--- batteries-included plugin (LSP, path, snippets, buffer, signature help).
+-- blink.cmp: one fast, batteries-included plugin (LSP, path, snippets, buffer,
+-- signature help). v2 is still in active development with breaking changes
+-- (verified June 2026); upstream's own recommendation is to stay on 1.*.
 return {
     "saghen/blink.cmp",
-    version = "1.*", -- v2 is in active development with breaking changes; stay on stable v1
+    version = "1.*",
     event = "InsertEnter",
     dependencies = { "folke/lazydev.nvim" },
     opts = {
         appearance = { nerd_font_variant = "mono" },
 
-        -- Keymap mirrors your old nvim-cmp habits:
+        -- Keymap mirrors your habits:
         --   <CR> confirm · <Tab>/<S-Tab> cycle items + jump snippets
         --   <C-Space> toggle menu/docs · <C-d>/<C-f> scroll docs · <C-e> hide
         keymap = {
