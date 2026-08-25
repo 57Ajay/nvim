@@ -1,0 +1,207 @@
+# Vocabulary map:  tmux session -> Herdr workspace ("Space")
+#                  tmux window  -> Herdr tab
+#                  tmux pane    -> Herdr pane
+
+onboarding = false
+
+
+# ============================================================================
+# BASIC SETTINGS
+# ============================================================================
+
+[terminal]
+# tmux: split-window -c "#{pane_current_path}" / new-window -c "..."
+# "follow" makes new panes, tabs and workspaces inherit the source cwd.
+new_cwd = "follow"
+shell_mode = "auto"
+
+[advanced]
+# tmux: set -g history-limit 50000
+# Herdr caps scrollback in BYTES, not lines. ~20 MB is roughly 50k lines of
+# typical terminal output. Default is 10 MB.
+scrollback_limit_bytes = 20000000
+
+[session]
+# tmux: set -g exit-unattached off
+# Herdr's server keeps panes alive after detach by design. This additionally
+# resumes supported AI-agent conversations after a server restart.
+resume_agents_on_restore = true
+
+# No Herdr equivalent needed for these tmux lines — Herdr handles them itself:
+#   set -g base-index 1 / setw -g pane-base-index 1  (tabs are already 1-based)
+#   set -g renumber-windows on
+#   set -g default-terminal / terminal-overrides ",xterm-256color*:Tc"
+#   set -sg escape-time 0
+#   set -g repeat-time 1000  (Herdr uses a dedicated resize mode instead)
+
+
+# ============================================================================
+# KEY BINDINGS
+# ============================================================================
+
+[keys]
+# tmux: unbind C-b ; set-option -g prefix C-a
+prefix = "ctrl+a"
+
+# --- Reload config -----------------------------------------------------------
+# tmux: bind r source-file ~/.tmux.conf
+# prefix+r is resize_mode by default, so the two are swapped here.
+reload_config = "prefix+r"
+resize_mode   = "prefix+shift+r"
+
+# --- Splits ------------------------------------------------------------------
+# tmux: bind | split-window -h   (side by side)
+# tmux: bind - split-window -v   (stacked)
+# CAREFUL: the naming is inverted vs tmux. tmux's -h (horizontal split axis)
+# produces side-by-side panes, which Herdr calls split_vertical.
+split_vertical   = "prefix+|"
+split_horizontal = "prefix+minus"
+
+# --- Tabs (tmux windows) -----------------------------------------------------
+new_tab      = "prefix+c"                    # tmux: bind c new-window
+close_tab    = "prefix+shift+x"              # tmux: bind X kill-window
+rename_tab   = "prefix+shift+t"
+switch_tab   = "prefix+1..9"
+previous_tab = ["prefix+p", "shift+left"]    # tmux: bind -n S-Left
+next_tab     = ["prefix+n", "shift+right"]   # tmux: bind -n S-Right
+
+# --- Pane focus --------------------------------------------------------------
+# tmux: bind h/j/k/l select-pane  +  bind -n M-Arrow select-pane
+focus_pane_left  = ["prefix+h", "alt+left"]
+focus_pane_down  = ["prefix+j", "alt+down"]
+focus_pane_up    = ["prefix+k", "alt+up"]
+focus_pane_right = ["prefix+l", "alt+right"]
+
+# --- Pane resize -------------------------------------------------------------
+# tmux: bind Arrow resize-pane 5  +  bind -n M-S-Arrow resize-pane 10
+# Herdr has no configurable step size, so both chords do the same amount.
+resize_pane_left  = ["prefix+left",  "shift+alt+left"]
+resize_pane_down  = ["prefix+down",  "shift+alt+down"]
+resize_pane_up    = ["prefix+up",    "shift+alt+up"]
+resize_pane_right = ["prefix+right", "shift+alt+right"]
+
+# --- Panes -------------------------------------------------------------------
+close_pane = "prefix+x"                      # tmux: bind x kill-pane
+zoom       = "prefix+z"
+copy_mode  = "prefix+["                      # tmux: copy mode, vi keys
+
+# Bonus, no tmux counterpart in your config — move a pane instead of jumping.
+swap_pane_left  = "prefix+shift+h"
+swap_pane_down  = "prefix+shift+j"
+swap_pane_up    = "prefix+shift+k"
+swap_pane_right = "prefix+shift+l"
+
+# --- Workspaces (tmux sessions) ----------------------------------------------
+# Keeps your tmux muscle memory: prefix+s = session list, prefix+d = detach.
+workspace_picker = ["prefix+w", "prefix+s"]
+detach           = ["prefix+q", "prefix+d"]
+new_workspace    = ["prefix+shift+n", "prefix+shift+s"]  # tmux: bind S
+rename_workspace = "prefix+shift+w"                      # tmux: prefix+$
+close_workspace  = "prefix+shift+d"
+goto             = "prefix+g"
+switch_workspace = "prefix+shift+1..9"
+
+# prefix+s now opens the workspace picker, so settings moves off it.
+settings       = "prefix+,"
+help           = "prefix+?"
+toggle_sidebar = "prefix+b"
+
+# --- Navigate mode (sidebar), vim keys, no prefix ----------------------------
+# Matches your `setw -g mode-keys vi` preference.
+navigate_pane_left  = "h"
+navigate_pane_down  = "j"
+navigate_pane_up    = "k"
+navigate_pane_right = "l"
+
+
+# ============================================================================
+# THEME
+# ============================================================================
+# Your tmux palette is Catppuccin Mocha, which Herdr ships built in. The
+# [theme.custom] block below is belt-and-braces: it pins the exact hex values
+# you were using, so nothing shifts if the built-in theme is ever retuned.
+
+[theme]
+name = "catppuccin"
+
+[theme.custom]
+panel_bg = "#1e1e2e"   # tmux: status-style bg
+text     = "#cdd6f4"   # tmux: status-style fg
+surface0 = "#313244"   # tmux: window-status-format bg / pane-border-style
+blue     = "#89b4fa"   # tmux: status-left / pane-active-border-style
+green    = "#a6e3a1"   # tmux: window-status-current-format bg
+red      = "#f38ba8"   # tmux: status-right date / message-style
+
+
+# ============================================================================
+# STATUS BAR  ->  TAB BAR + SIDEBAR
+# ============================================================================
+# Herdr splits tmux's status line in two: the sidebar owns session/window
+# listing (your status-left and window-status-*), and the tab bar owns the
+# right-hand status area (your status-right).
+
+[ui]
+tab_bar_position = "bottom"       # tmux: set -g status-position bottom
+accent = "#89b4fa"                # tmux: pane-active-border-style 'fg=#89b4fa'
+
+# tmux: set -g mouse on
+mouse_capture  = true
+copy_on_select = true
+
+# tmux: bind c new-window          (no name prompt)
+prompt_new_tab_name = false
+# tmux: bind S command-prompt -p "New session name:"
+prompt_new_workspace_name = true
+
+# tmux-style splitters: internal dividers only, no frame around the pane area.
+pane_borders       = true
+pane_outer_borders = false
+pane_gaps          = false
+
+# tmux: set -g set-titles on / set-titles-string '#T - #S:#I:#W'
+window_title = "{terminal_title} - {workspace}:{tab}"
+
+# tmux: set -g focus-events on
+redraw_on_focus_gained = true
+
+# tmux: status-right '... %Y-%m-%d ... %H:%M '
+tab_bar_right = [
+  { type = "datetime", format = "%Y-%m-%d" },
+  { type = "datetime", format = "%H:%M" },
+]
+tab_bar_right_separator = "  "
+
+agent_panel_sort = "spaces"
+[ui.toast]
+# Closest thing to tmux's `monitor-activity on` + `visual-activity off`:
+# in-app toast when a background agent finishes or needs input, no OS popups.
+delivery      = "herdr"
+delay_seconds = 1
+
+[ui.toast.herdr]
+position = "bottom-right"
+
+
+# ============================================================================
+# OPTIONAL / COMMENTED OUT
+# ============================================================================
+
+# tmux-resurrect equivalent — restores pane *contents* across server restarts.
+# Read https://herdr.dev/docs/session-state/ first; it writes pane output to
+# disk, which is a real security trade-off if you paste secrets into panes.
+# [experimental]
+# pane_history = true
+
+# Only if you want to keep running tmux inside a Herdr pane during migration.
+# [experimental]
+# allow_nested = true
+
+# tmux's `bind p paste-buffer` has no Herdr action. If you want a quick popup
+# for something you reached for often, custom commands look like this:
+# [[keys.command]]
+# key = "prefix+alt+g"
+# type = "popup"
+# command = "lazygit"
+# description = "run lazygit"
+# width = "80%"
+# height = "80%"
