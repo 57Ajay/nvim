@@ -29,6 +29,8 @@ return {
         Snacks.toggle.indent():map("<leader>ug")
     end,
     keys = {
+        -- Searchable list of every keybinding in KEYBINDINGS.md (see lua/core/cheatsheet.lua).
+        { "<leader>?", function() require("core.cheatsheet").open() end, desc = "Keybindings cheatsheet (search)" },
         { "<leader>fb", function() Snacks.picker.buffers() end, desc = "Buffers" },
         { "<leader>fh", function() Snacks.picker.help() end, desc = "Help pages" },
         { "<leader>fr", function() Snacks.picker.recent() end, desc = "Recent files" },

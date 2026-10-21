@@ -79,10 +79,12 @@ AppImage, or the unstable PPA all give you 0.12.x on Ubuntu.
 
 ```
 init.lua                  -- 0.12 guard + module loading
+KEYBINDINGS.md            -- every keybinding + search keywords (read by <leader>?)
 lua/core/options.lua      -- options (incl. treesitter folds)
 lua/core/keymaps.lua      -- editor-level keymaps only
 lua/core/autocmds.lua     -- yank highlight, last position, auto-mkdir, q-to-close
 lua/core/lazy.lua         -- plugin manager bootstrap
+lua/core/cheatsheet.lua   -- <leader>? searchable keybinding list
 lua/plugins/ui.lua        -- colorscheme, statusline, icons
 lua/plugins/completion.lua-- blink.cmp
 lua/plugins/editor.lua    -- conform, trouble, pairs, lazydev, which-key groups
@@ -97,102 +99,32 @@ lua/plugins/test.lua      -- neotest
 ```
 
 Plugin keymaps live in their specs (lazy-loading + which-key discovery);
-`core/keymaps.lua` stays plugin-free.
+`core/keymaps.lua` stays plugin-free. Add new keys to `KEYBINDINGS.md` too, so
+`<leader>?` can find them.
 
 ## Keymaps
 
-Leader is `<Space>`. Press it and wait — which-key shows everything.
+Leader is `<Space>`. **Every keybinding, with search keywords, is in
+[KEYBINDINGS.md](KEYBINDINGS.md).** Inside Neovim you don't need to open it:
 
-### General / windows / buffers / tabs
+- `<Space>?` fuzzy-searches that list by what you want to do (`rename`,
+  `commit`, `breakpoint`, `split`…). <kbd>Enter</kbd> runs the key.
+- `<Space>`, then wait: which-key shows every key that can follow.
+- `<Space>fk` searches every live keymap, Neovim and plugin defaults included.
+
+The ones you'll reach for most:
 
 | Key | Action |
 | --- | --- |
+| `<leader>ff` / `<leader>fg` | find files / search text in the project |
+| `<leader>e` | file explorer (netrw) |
 | `<leader>w` / `<leader>q` | save / quit |
-| `<leader>h` | clear search highlight |
-| `<C-h/j/k/l>` | window navigation |
-| `<C-arrows>` | resize windows |
-| `<S-h>` / `<S-l>` | prev / next buffer |
-| `<leader>c` | close buffer |
-| `L` | next tab, `<leader>L1..9` go to tab N |
-| `<` / `>` (visual) | indent, keep selection |
-| `J` / `K`, `<A-j>` / `<A-k>` | move line/selection down/up |
-| `<leader>qq` | insert Go `if err != nil` block |
-
-### Netrw (unchanged)
-
-`<leader>e` explore · `<leader>HS` h-split · `<leader>VS` v-split ·
-`<leader>nt` tab · `<leader>wl` left explorer
-
-### Find (fff + snacks)
-
-| Key | Action |
-| --- | --- |
-| `<leader>ff` / `fg` / `fz` | files / live grep / fuzzy grep (fff) |
-| `<leader>fb` `fh` `fr` `fk` `fc` | buffers, help, recent, keymaps, commands |
-| `<leader>fd` / `fs` / `fS` | diagnostics / doc symbols / workspace symbols |
-| `<leader>f/` | grep current buffer lines |
-| `<leader>fu` | **undo history** |
-| `<leader>ft` | **TODO/FIXME picker** |
-| `<leader>fR` | resume last picker |
-
-### LSP (buffer-local on attach)
-
-`gd` definition · `gD` declaration · `gr` references · `gi` implementation ·
-`gt` type def · `K` hover · `<leader>rn` rename · `<leader>ca` code action ·
-`<C-s>` (insert) signature help · `<leader>f` format (conform; also on save)
-
-### Diagnostics / lists
-
-`]d` / `[d` jump · `<leader>xd` float · `<leader>xx` project diagnostics ·
-`<leader>xX` buffer · `<leader>xs` symbols · `<leader>xq` quickfix ·
-`<leader>xl` loclist · `<leader>xt` TODOs in Trouble
-
-### Git
-
-`]h` / `[h` hunks · `<leader>ga` stage · `<leader>gr` reset · `<leader>gp` preview ·
-`<leader>gb` / `gB` blame · `ih` hunk textobject · `<leader>gs` **Neogit** ·
-`<leader>gd` diff · `<leader>gh` / `gH` file/branch history · `<leader>gm` merge tool ·
-`<leader>gl` git log picker
-
-### Debug (`<leader>d`)
-
-| Key | Action |
-| --- | --- |
-| `<leader>db` / `dB` | toggle / conditional breakpoint |
-| `<leader>dc` or `<F5>` | continue / start |
-| `<leader>dC` | run to cursor |
-| `<leader>di` `<F11>` / `dO` `<F10>` / `do` `<F12>` | step into / over / out |
-| `<leader>de` | eval under cursor / selection |
-| `<leader>dr` / `dl` / `dt` | REPL / run last / terminate |
-| `<leader>du` | toggle DAP UI |
-
-### Test (`<leader>t`)
-
-| Key | Action |
-| --- | --- |
-| `<leader>tt` / `tf` / `ta` | run nearest / file / all (cwd) |
-| `<leader>td` | **debug nearest test** (delve / debugpy) |
-| `<leader>tl` / `tS` | run last / stop |
-| `<leader>ts` / `to` / `tO` | summary tree / output / output panel |
-| `<leader>tw` | watch file |
-
-### Editing power-ups
-
-| Key | Action |
-| --- | --- |
-| `s` / `S` | **flash** jump / treesitter select (see *Behavior changes*) |
-| `r` / `R` (operator) | remote / treesitter search |
-| `gsa` `gsd` `gsr` `gsf` | surround add / delete / replace / find (`gsa"`, `gsr"'`) |
-| `]t` / `[t` | next / prev TODO comment |
-| `<leader>sr` / `sw` | project search & replace / word under cursor (grug-far) |
-| `<leader>qs` / `ql` / `qd` | restore session (dir) / last session / stop saving |
-| `af if ac ic aa ia` | function/class/parameter textobjects |
-| `]f [f ]a [a` | jump functions / parameters |
-
-### Toggles (`<leader>u`)
-
-`us` spell · `uw` wrap · `ur` relative numbers · `ul` line numbers ·
-`ud` diagnostics · `uh` inlay hints · `ug` indent guides
+| `<C-h/j/k/l>` | move between windows |
+| `gd` / `gr` / `K` | definition / references / hover docs |
+| `<leader>rn` / `<leader>ca` / `<leader>f` | rename / code action / format |
+| `]d` / `[d` | next / previous diagnostic |
+| `<leader>gs` | Neogit: stage, commit, push |
+| `s` | flash: jump anywhere on screen |
 
 ## Behavior changes worth knowing
 
@@ -231,8 +163,12 @@ tree-sitter CLI 0.26.9, gcc 13:
 - `Lazy! sync` restores all **37 pinned plugins** cleanly
 - **27 treesitter parsers** compile and attach (highlight + indentexpr
   confirmed per-buffer for lua/go/python/jsonc)
-- **36/36 smoke checks**: every keymap above registered, netrw intact,
+- **36/36 smoke checks**: every keymap registered, netrw intact,
   treesitter folds active, todo-picker registration on both code paths
+- **Keybindings doc**: every key in `KEYBINDINGS.md` cross-checked against the
+  live keymap table (LSP and gitsigns buffer maps included), and every keymap
+  the config adds is documented; `<Space>?` driven in a real TUI (pty):
+  search, run a key, open the doc at a row
 - **LSP end-to-end**: mason-installed lua_ls auto-enabled, attached, blink
   capabilities advertised, buffer-local maps created
 - **Formatting end-to-end**: conform found mason's stylua and reformatted a
