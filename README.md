@@ -3,11 +3,15 @@
 A fast, modern Neovim setup for polyglot systems work (Go, TypeScript, Rust,
 Python, Zig, C/C++, Lua). No deprecated APIs anywhere: native `vim.lsp.config`
 / `vim.lsp.enable`, nvim-treesitter `main` branch, mason v2, `vim.diagnostic.jump`,
-`vim.hl`. Every piece below was installed, booted, and exercised on a real
-**Neovim 0.12.1** binary before shipping (see *Verified* at the bottom).
+`vim.hl`. Every piece below was installed, booted, and exercised on real
+**Neovim 0.12.6** (current stable) and **0.13-dev nightly** binaries before
+shipping (see *Verified* at the bottom).
 
 **Requires Neovim 0.12 or newer.** `init.lua` refuses to load on anything older,
 on purpose.
+
+**Every keybinding — including the multi-cursor guide — is in
+[KEYBINDINGS.md](KEYBINDINGS.md).**
 
 ## What's inside
 
@@ -20,6 +24,7 @@ on purpose.
 | Syntax | **nvim-treesitter `main`** (the rewrite) + textobjects `main`; treesitter folds |
 | **Debugging** | **nvim-dap** + dap-ui + virtual-text; mason-managed adapters: delve (Go), debugpy (Python), codelldb (Rust/Zig/C/C++) |
 | **Testing** | **neotest** + neotest-golang (delve debugging built in) + neotest-python (pytest + debugpy) |
+| **Multi-cursor** | **multicursor.nvim** on 0.12; Neovim's built-in cursors on 0.13+ — same keys either way (`<C-n>`, `<A-J>`/`<A-K>`, visual `I`/`A`, `<leader>m…`) |
 | **Power editing** | **flash.nvim** (2-keystroke motions), **mini.surround** (`gs*`), **todo-comments**, **grug-far** (project search & replace), **persistence** (sessions) |
 | Git | gitsigns, **Neogit**, diffview (incl. 3-way merge resolver) |
 | UI / QoL | tokyonight, lualine, which-key, snacks (indent guides, notifier, image, bigfile, input, words, `<leader>u` toggle suite), trouble, mini.pairs, lazydev |
@@ -32,7 +37,7 @@ delete it before the first `:Lazy sync` if you'd rather float to latest.
 
 Hard requirements on every machine:
 
-- **Neovim ≥ 0.12** (tested on 0.12.1; 0.12.3 is current stable)
+- **Neovim ≥ 0.12** (tested on 0.12.6, the current stable, and on 0.13-dev nightly)
 - `git`, `curl`, a **C compiler** (gcc/clang) — treesitter parsers compile locally
 - **tree-sitter CLI ≥ 0.26.1** (binary release, **not** the npm package):
 
@@ -79,19 +84,22 @@ AppImage, or the unstable PPA all give you 0.12.x on Ubuntu.
 
 ```
 init.lua                  -- 0.12 guard + module loading
+KEYBINDINGS.md            -- every keymap + the multi-cursor guide
 lua/core/options.lua      -- options (incl. treesitter folds)
 lua/core/keymaps.lua      -- editor-level keymaps only
+lua/core/multicursor.lua  -- multi-cursor keys for Neovim 0.13+'s built-in cursors
 lua/core/autocmds.lua     -- yank highlight, last position, auto-mkdir, q-to-close
 lua/core/lazy.lua         -- plugin manager bootstrap
-lua/plugins/ui.lua        -- colorscheme, statusline, icons
+lua/plugins/ui.lua        -- colorscheme, statusline (+ cursor count), icons
 lua/plugins/completion.lua-- blink.cmp
 lua/plugins/editor.lua    -- conform, trouble, pairs, lazydev, which-key groups
 lua/plugins/editing.lua   -- flash, surround, todo-comments, grug-far, sessions
+lua/plugins/multicursor.lua -- multicursor.nvim (Neovim 0.12)
 lua/plugins/lsp.lua       -- LSP + mason + formatter auto-install
 lua/plugins/treesitter.lua-- main branch, parser list, per-buffer attach
 lua/plugins/git.lua       -- gitsigns, neogit, diffview
 lua/plugins/fff.lua       -- file finder
-lua/plugins/snacks.lua    -- pickers, QoL modules, <leader>u toggles
+lua/plugins/snacks.lua    -- pickers, QoL modules, terminal, <leader>u toggles
 lua/plugins/dap.lua       -- debugging
 lua/plugins/test.lua      -- neotest
 ```
@@ -101,98 +109,23 @@ Plugin keymaps live in their specs (lazy-loading + which-key discovery);
 
 ## Keymaps
 
-Leader is `<Space>`. Press it and wait — which-key shows everything.
-
-### General / windows / buffers / tabs
+Leader is `<Space>`. Press it and wait — which-key shows everything, and
+`<leader>fk` searches every keymap by description. **The full reference is
+[KEYBINDINGS.md](KEYBINDINGS.md)**; the ones you'll use most:
 
 | Key | Action |
 | --- | --- |
 | `<leader>w` / `<leader>q` | save / quit |
-| `<leader>h` | clear search highlight |
-| `<C-h/j/k/l>` | window navigation |
-| `<C-arrows>` | resize windows |
-| `<S-h>` / `<S-l>` | prev / next buffer |
-| `<leader>c` | close buffer |
-| `L` | next tab, `<leader>L1..9` go to tab N |
-| `<` / `>` (visual) | indent, keep selection |
-| `J` / `K`, `<A-j>` / `<A-k>` | move line/selection down/up |
-| `<leader>qq` | insert Go `if err != nil` block |
-
-### Netrw (unchanged)
-
-`<leader>e` explore · `<leader>HS` h-split · `<leader>VS` v-split ·
-`<leader>nt` tab · `<leader>wl` left explorer
-
-### Find (fff + snacks)
-
-| Key | Action |
-| --- | --- |
-| `<leader>ff` / `fg` / `fz` | files / live grep / fuzzy grep (fff) |
-| `<leader>fb` `fh` `fr` `fk` `fc` | buffers, help, recent, keymaps, commands |
-| `<leader>fd` / `fs` / `fS` | diagnostics / doc symbols / workspace symbols |
-| `<leader>f/` | grep current buffer lines |
-| `<leader>fu` | **undo history** |
-| `<leader>ft` | **TODO/FIXME picker** |
-| `<leader>fR` | resume last picker |
-
-### LSP (buffer-local on attach)
-
-`gd` definition · `gD` declaration · `gr` references · `gi` implementation ·
-`gt` type def · `K` hover · `<leader>rn` rename · `<leader>ca` code action ·
-`<C-s>` (insert) signature help · `<leader>f` format (conform; also on save)
-
-### Diagnostics / lists
-
-`]d` / `[d` jump · `<leader>xd` float · `<leader>xx` project diagnostics ·
-`<leader>xX` buffer · `<leader>xs` symbols · `<leader>xq` quickfix ·
-`<leader>xl` loclist · `<leader>xt` TODOs in Trouble
-
-### Git
-
-`]h` / `[h` hunks · `<leader>ga` stage · `<leader>gr` reset · `<leader>gp` preview ·
-`<leader>gb` / `gB` blame · `ih` hunk textobject · `<leader>gs` **Neogit** ·
-`<leader>gd` diff · `<leader>gh` / `gH` file/branch history · `<leader>gm` merge tool ·
-`<leader>gl` git log picker
-
-### Debug (`<leader>d`)
-
-| Key | Action |
-| --- | --- |
-| `<leader>db` / `dB` | toggle / conditional breakpoint |
-| `<leader>dc` or `<F5>` | continue / start |
-| `<leader>dC` | run to cursor |
-| `<leader>di` `<F11>` / `dO` `<F10>` / `do` `<F12>` | step into / over / out |
-| `<leader>de` | eval under cursor / selection |
-| `<leader>dr` / `dl` / `dt` | REPL / run last / terminate |
-| `<leader>du` | toggle DAP UI |
-
-### Test (`<leader>t`)
-
-| Key | Action |
-| --- | --- |
-| `<leader>tt` / `tf` / `ta` | run nearest / file / all (cwd) |
-| `<leader>td` | **debug nearest test** (delve / debugpy) |
-| `<leader>tl` / `tS` | run last / stop |
-| `<leader>ts` / `to` / `tO` | summary tree / output / output panel |
-| `<leader>tw` | watch file |
-
-### Editing power-ups
-
-| Key | Action |
-| --- | --- |
-| `s` / `S` | **flash** jump / treesitter select (see *Behavior changes*) |
-| `r` / `R` (operator) | remote / treesitter search |
-| `gsa` `gsd` `gsr` `gsf` | surround add / delete / replace / find (`gsa"`, `gsr"'`) |
-| `]t` / `[t` | next / prev TODO comment |
-| `<leader>sr` / `sw` | project search & replace / word under cursor (grug-far) |
-| `<leader>qs` / `ql` / `qd` | restore session (dir) / last session / stop saving |
-| `af if ac ic aa ia` | function/class/parameter textobjects |
-| `]f [f ]a [a` | jump functions / parameters |
-
-### Toggles (`<leader>u`)
-
-`us` spell · `uw` wrap · `ur` relative numbers · `ul` line numbers ·
-`ud` diagnostics · `uh` inlay hints · `ug` indent guides
+| `<S-h>` / `<S-l>` | previous / next buffer (`gt` / `gT` for tabs) |
+| `<leader>ff` / `<leader>fg` | find files / live grep |
+| `gd` / `gr` / `K` / `<leader>ca` / `<leader>rn` | LSP: definition / references / hover / code action / rename |
+| `s` + 2 chars | flash jump anywhere on screen |
+| `<C-n>` | multi-cursor: add a cursor at the next match (again and again) |
+| `<A-J>` / `<A-K>` | multi-cursor: add a cursor below / above |
+| `V`…`j`, then `I` / `A` | type at the start / end of every selected line |
+| `<Esc>` | back to one cursor / clear search highlight |
+| `<leader>gs` | Neogit |
+| `<leader>u…` | UI toggles (wrap, spell, format on save, zoom, …) |
 
 ## Behavior changes worth knowing
 
@@ -207,6 +140,16 @@ Leader is `<Space>`. Press it and wait — which-key shows everything.
 - `q` closes help/man/quickfix/checkhealth windows.
 - jsonc files highlight via the **json** parser — that's correct on the
   treesitter main branch (there is no separate jsonc parser anymore).
+- **`H` / `L` (Shift+h / Shift+l) are previous / next buffer.** `L` used to be
+  mapped to "next tab", which silently replaced Shift+l = next buffer (they are
+  the same key). Tabs: built-in `gt` / `gT`, `<leader>L1`…`9`, `<leader>Ln/Lc/Lo`.
+- **Multi-cursor takes `<C-n>`, `<C-q>`, `ga` and visual `I` / `A`** (stock:
+  line down, block select — use `<C-v>`, `:ascii`, first-line-only insert).
+- **`<Esc>`** in normal mode clears the search highlight (and extra cursors).
+- **`j` / `k`** move by screen line on wrapped text (by real line with a count).
+- **Neovim 0.13:** multi-cursor switches to Neovim's built-in cursors (same
+  keys; differences in [KEYBINDINGS.md](KEYBINDINGS.md#multi-cursor-on-neovim-013)),
+  and the built-in `Q` adds a cursor instead of replaying the last macro (`@@`).
 
 ## Troubleshooting
 
@@ -225,19 +168,27 @@ Leader is `<Space>`. Press it and wait — which-key shows everything.
 
 ## Verified
 
-Tested in a sandbox against the real **Neovim 0.12.1** release binary,
-tree-sitter CLI 0.26.9, gcc 13:
+Tested in a sandbox (October 2026) on Neovim built from source at the
+**v0.12.6** tag (current stable) and the **nightly** tag (0.13.0-dev), with
+tree-sitter CLI 0.27.1, gcc 13, and every plugin at the commit in
+`lazy-lock.json`:
 
-- `Lazy! sync` restores all **37 pinned plugins** cleanly
-- **27 treesitter parsers** compile and attach (highlight + indentexpr
-  confirmed per-buffer for lua/go/python/jsonc)
-- **36/36 smoke checks**: every keymap above registered, netrw intact,
-  treesitter folds active, todo-picker registration on both code paths
-- **LSP end-to-end**: mason-installed lua_ls auto-enabled, attached, blink
-  capabilities advertised, buffer-local maps created
-- **Formatting end-to-end**: conform found mason's stylua and reformatted a
-  buffer on command
-- **Real TUI run (pty)**: clean `:messages`, snacks owns `vim.ui.input`/`select`,
-  VeryLazy plugins load; startup ≈ **189 ms** in the sandbox
-- `:checkhealth` clean apart from sandbox-environment items (no GUI terminal,
-  no fd/Go/Node installed there)
+- **Clean boot on both**: no errors, no messages, zero `vim.deprecate()` calls.
+  (0.13 deprecates `vim.hl.on_yank` — it printed a warning on every yank — so
+  the config uses `vim.hl.hl_op` where it exists.)
+- All **38 plugins** restore from the lockfile; **27 treesitter parsers**
+  compile and load on both versions.
+- **Keymap audit** (global + LSP / gitsigns buffer-local maps): every key in
+  KEYBINDINGS.md is registered; no new "prefix waits" were introduced, and the
+  0.4 s wait on LSP `gr` is gone (≈ 45 ms now, was ≈ 440 ms).
+- **Real-terminal tests** (tmux, keys typed at human speed, buffer state read
+  back over RPC):
+  - 0.12.6 — multicursor.nvim: **43/43** checks; other keymaps: **33/33**.
+  - 0.13-dev — same keys on Neovim's built-in cursors: **43/43**; other
+    keymaps: **33/33**.
+- **LSP / formatting end-to-end** with gopls and gofmt: attach, `gr`, `]r`
+  reference jumps, format-on-save and its `<leader>uf` / `uF` toggles.
+- **Partial git staging**: visual `<leader>ga` stages only the selected line.
+- Not testable in the sandbox, because GitHub *release downloads* are blocked
+  there: mason's server / tool installs and blink.cmp's prebuilt matcher
+  (built from source with cargo instead — `fuzzy.implementation` is unchanged).

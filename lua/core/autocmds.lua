@@ -4,11 +4,12 @@ local autocmd = vim.api.nvim_create_autocmd
 
 local general = augroup("General", { clear = true })
 
--- Highlight on yank (vim.hl replaces deprecated vim.highlight)
+-- Highlight on yank. Neovim 0.13 renames vim.hl.on_yank to vim.hl.hl_op and
+-- deprecates the old name (it warns on every yank), so use whichever exists.
 autocmd("TextYankPost", {
     group = general,
     callback = function()
-        vim.hl.on_yank({ higroup = "IncSearch", timeout = 150 })
+        (vim.hl.hl_op or vim.hl.on_yank)({ higroup = "IncSearch", timeout = 150 })
     end,
 })
 

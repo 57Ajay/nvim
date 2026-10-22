@@ -24,11 +24,22 @@ return {
                 -- Hunk navigation
                 map("n", "]h", function() gs.nav_hunk("next") end, "Next git hunk")
                 map("n", "[h", function() gs.nav_hunk("prev") end, "Prev git hunk")
+                map("n", "]H", function() gs.nav_hunk("last") end, "Last git hunk")
+                map("n", "[H", function() gs.nav_hunk("first") end, "First git hunk")
 
-                -- Hunk actions (stage_hunk toggles stage/unstage)
-                map({ "n", "v" }, "<leader>ga", gs.stage_hunk, "Git stage/unstage hunk")
-                map({ "n", "v" }, "<leader>gr", gs.reset_hunk, "Git reset hunk")
+                -- Hunk actions (stage_hunk toggles stage/unstage). In visual mode only
+                -- the selected lines are staged/reset — gitsigns needs the range passed
+                -- explicitly, otherwise it acts on the whole hunk.
+                map("n", "<leader>ga", gs.stage_hunk, "Git stage/unstage hunk")
+                map("n", "<leader>gr", gs.reset_hunk, "Git reset hunk")
+                map("v", "<leader>ga", function() gs.stage_hunk({ vim.fn.line("."), vim.fn.line("v") }) end,
+                    "Git stage selected lines")
+                map("v", "<leader>gr", function() gs.reset_hunk({ vim.fn.line("."), vim.fn.line("v") }) end,
+                    "Git reset selected lines")
+                map("n", "<leader>gS", gs.stage_buffer, "Git stage whole file")
+                map("n", "<leader>gR", gs.reset_buffer, "Git reset whole file")
                 map("n", "<leader>gp", gs.preview_hunk, "Git preview hunk")
+                map("n", "<leader>gi", gs.preview_hunk_inline, "Git preview hunk inline")
 
                 -- Blame
                 map("n", "<leader>gb", function() gs.blame_line({ full = true }) end, "Git blame line")

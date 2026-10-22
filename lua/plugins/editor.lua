@@ -32,7 +32,11 @@ return {
                 css = { "prettierd", "prettier", stop_after_first = true },
                 markdown = { "prettierd", "prettier", stop_after_first = true },
             },
-            format_on_save = function(_)
+            -- <leader>uf / <leader>uF switch this off globally / per buffer.
+            format_on_save = function(buf)
+                if vim.g.disable_autoformat or vim.b[buf].disable_autoformat then
+                    return
+                end
                 return { timeout_ms = 1500, lsp_format = "fallback" }
             end,
         },
@@ -74,11 +78,13 @@ return {
         opts = {
             preset = "modern",
             spec = {
-                { "<leader>d", group = "debug" },
+                { "<leader>d", group = "debug", mode = { "n", "x" } },
                 { "<leader>f", group = "find / format" },
-                { "<leader>g", group = "git" },
+                { "<leader>g", group = "git", mode = { "n", "x" } },
+                { "<leader>m", group = "multicursor", mode = { "n", "x" } },
                 { "<leader>q", group = "quit / session" },
-                { "<leader>s", group = "search / replace" },
+                { "<leader>r", group = "rename" },
+                { "<leader>s", group = "search / replace", mode = { "n", "x" } },
                 { "<leader>t", group = "test" },
                 { "<leader>u", group = "ui toggles" },
                 { "<leader>x", group = "diagnostics / lists" },

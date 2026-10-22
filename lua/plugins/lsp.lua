@@ -79,22 +79,28 @@ return {
                         client.server_capabilities.hoverProvider = false
                     end
 
-                    local function map(keys, fn, desc)
-                        vim.keymap.set("n", keys, fn, { buffer = buf, desc = "LSP: " .. desc })
+                    local function map(keys, fn, desc, opts)
+                        opts = vim.tbl_extend("force", { buffer = buf, desc = "LSP: " .. desc }, opts or {})
+                        local mode = opts.mode or "n"
+                        opts.mode = nil
+                        vim.keymap.set(mode, keys, fn, opts)
                     end
 
                     -- Navigation goes through the fast snacks picker.
                     map("gd", function() Snacks.picker.lsp_definitions() end, "Definition")
                     map("gD", vim.lsp.buf.declaration, "Declaration")
-                    map("gr", function() Snacks.picker.lsp_references() end, "References")
+                    -- nowait: Neovim 0.11+ ships grn/grr/gra/gri/grt/grx defaults, which
+                    -- made a bare `gr` sit through timeoutlen (~0.4s) on every use.
+                    map("gr", function() Snacks.picker.lsp_references() end, "References", { nowait = true })
                     map("gi", function() Snacks.picker.lsp_implementations() end, "Implementation")
                     map("gt", function() Snacks.picker.lsp_type_definitions() end, "Type definition")
 
                     map("K", vim.lsp.buf.hover, "Hover docs")
+                    map("gK", vim.lsp.buf.signature_help, "Signature help")
                     map("<leader>rn", vim.lsp.buf.rename, "Rename symbol")
-                    map("<leader>ca", vim.lsp.buf.code_action, "Code action")
+                    map("<leader>ca", vim.lsp.buf.code_action, "Code action", { mode = { "n", "x" } })
                     -- (Document formatting is <leader>f via conform.nvim.)
-                    -- (Signature help is <C-s> in insert mode, a 0.11+ default —
+                    -- (Signature help is also <C-s> in insert mode, a 0.11+ default —
                     --  this avoids clobbering your <C-k> window-up keymap.)
                 end,
             })
