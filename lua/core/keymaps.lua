@@ -39,8 +39,8 @@ keymap("n", "<C-Down>", ":resize +2<CR>", opts)
 keymap("n", "<C-Left>", ":vertical resize -2<CR>", opts)
 keymap("n", "<C-Right>", ":vertical resize +2<CR>", opts)
 
--- Buffers
-keymap("n", "<S-l>", ":bnext<CR>", { desc = "Next buffer" })
+-- Buffers. Next buffer is the built-in ]b: <S-l> is the same key as `L`,
+-- which is "next tab" below (in LSP buffers `gt` is type definition).
 keymap("n", "<S-h>", ":bprevious<CR>", { desc = "Previous buffer" })
 keymap("n", "<leader>c", ":bdelete<CR>", { desc = "Close buffer" })
 
@@ -63,8 +63,8 @@ keymap("n", "<leader>VS", ":Vexplore<CR>", { desc = "Netrw: vertical split" })
 keymap("n", "<leader>nt", ":Texplore<CR>", { desc = "Netrw: new tab" })
 keymap("n", "<leader>wl", ":Lexplore<CR>", { desc = "Netrw: toggle left explorer" })
 
--- Tabs. (`L` is the same key as <S-l>, so mapping it to :tabn silently
--- killed "next buffer" above. Next/prev tab is the built-in gt / gT.)
+-- Tabs
+keymap("n", "L", ":tabn<CR>", { desc = "Next tab" })
 for i = 1, 9 do
     keymap("n", "<leader>L" .. i, i .. "gt", { desc = "Go to tab " .. i })
 end

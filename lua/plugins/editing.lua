@@ -26,11 +26,12 @@ return {
         keys = {
             { "gsa", desc = "Add surrounding", mode = { "n", "x" } },
             { "gsd", desc = "Delete surrounding" },
-            { "gsf", desc = "Find right surrounding" },
-            { "gsF", desc = "Find left surrounding" },
+            { "gsf", desc = "Find right surrounding", mode = { "n", "x", "o" } },
+            { "gsF", desc = "Find left surrounding", mode = { "n", "x", "o" } },
             { "gsh", desc = "Highlight surrounding" },
             { "gsr", desc = "Replace surrounding" },
-            { "gsn", desc = "Update n_lines" },
+            -- mini.surround no longer creates the update_n_lines mapping itself.
+            { "gsn", function() require("mini.surround").update_n_lines() end, desc = "Update n_lines" },
         },
         opts = {
             mappings = {
@@ -40,7 +41,6 @@ return {
                 find_left = "gsF",
                 highlight = "gsh",
                 replace = "gsr",
-                update_n_lines = "gsn",
             },
         },
     },

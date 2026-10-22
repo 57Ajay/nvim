@@ -84,12 +84,13 @@ AppImage, or the unstable PPA all give you 0.12.x on Ubuntu.
 
 ```
 init.lua                  -- 0.12 guard + module loading
-KEYBINDINGS.md            -- every keymap + the multi-cursor guide
+KEYBINDINGS.md            -- every keybinding + search keywords (read by <leader>?), multi-cursor guide
 lua/core/options.lua      -- options (incl. treesitter folds)
 lua/core/keymaps.lua      -- editor-level keymaps only
 lua/core/multicursor.lua  -- multi-cursor keys for Neovim 0.13+'s built-in cursors
 lua/core/autocmds.lua     -- yank highlight, last position, auto-mkdir, q-to-close
 lua/core/lazy.lua         -- plugin manager bootstrap
+lua/core/cheatsheet.lua   -- <leader>? searchable keybinding list
 lua/plugins/ui.lua        -- colorscheme, statusline (+ cursor count), icons
 lua/plugins/completion.lua-- blink.cmp
 lua/plugins/editor.lua    -- conform, trouble, pairs, lazydev, which-key groups
@@ -105,27 +106,36 @@ lua/plugins/test.lua      -- neotest
 ```
 
 Plugin keymaps live in their specs (lazy-loading + which-key discovery);
-`core/keymaps.lua` stays plugin-free.
+`core/keymaps.lua` stays plugin-free. Add new keys to `KEYBINDINGS.md` too, so
+`<leader>?` can find them.
 
 ## Keymaps
 
-Leader is `<Space>`. Press it and wait — which-key shows everything, and
-`<leader>fk` searches every keymap by description. **The full reference is
-[KEYBINDINGS.md](KEYBINDINGS.md)**; the ones you'll use most:
+Leader is `<Space>`. **Every keybinding, with search keywords, is in
+[KEYBINDINGS.md](KEYBINDINGS.md).** Inside Neovim you don't need to open it:
+
+- `<Space>?` fuzzy-searches that list by what you want to do (`rename`,
+  `commit`, `breakpoint`, `split`…). <kbd>Enter</kbd> runs the key.
+- `<Space>`, then wait: which-key shows every key that can follow.
+- `<Space>fk` searches every live keymap, Neovim and plugin defaults included.
+
+The ones you'll reach for most:
 
 | Key | Action |
 | --- | --- |
+| `<leader>ff` / `<leader>fg` | find files / search text in the project |
+| `<leader>e` | file explorer (netrw) |
 | `<leader>w` / `<leader>q` | save / quit |
-| `<S-h>` / `<S-l>` | previous / next buffer (`gt` / `gT` for tabs) |
-| `<leader>ff` / `<leader>fg` | find files / live grep |
-| `gd` / `gr` / `K` / `<leader>ca` / `<leader>rn` | LSP: definition / references / hover / code action / rename |
-| `s` + 2 chars | flash jump anywhere on screen |
-| `<C-n>` | multi-cursor: add a cursor at the next match (again and again) |
-| `<A-J>` / `<A-K>` | multi-cursor: add a cursor below / above |
+| `<C-h/j/k/l>` | move between windows |
+| `gd` / `gr` / `K` | definition / references / hover docs |
+| `<leader>rn` / `<leader>ca` / `<leader>f` | rename / code action / format |
+| `]d` / `[d` | next / previous diagnostic |
+| `<leader>gs` | Neogit: stage, commit, push |
+| `s` | flash: jump anywhere on screen |
+| `<C-n>` | multi-cursor: a cursor at the next match of the word (press again for more) |
+| `<A-J>` / `<A-K>` | multi-cursor: a cursor on the line below / above |
 | `V`…`j`, then `I` / `A` | type at the start / end of every selected line |
-| `<Esc>` | back to one cursor / clear search highlight |
-| `<leader>gs` | Neogit |
-| `<leader>u…` | UI toggles (wrap, spell, format on save, zoom, …) |
+| `<Esc>` | back to one cursor · clear search highlights |
 
 ## Behavior changes worth knowing
 
@@ -140,9 +150,10 @@ Leader is `<Space>`. Press it and wait — which-key shows everything, and
 - `q` closes help/man/quickfix/checkhealth windows.
 - jsonc files highlight via the **json** parser — that's correct on the
   treesitter main branch (there is no separate jsonc parser anymore).
-- **`H` / `L` (Shift+h / Shift+l) are previous / next buffer.** `L` used to be
-  mapped to "next tab", which silently replaced Shift+l = next buffer (they are
-  the same key). Tabs: built-in `gt` / `gT`, `<leader>L1`…`9`, `<leader>Ln/Lc/Lo`.
+- **`H` is previous buffer, `L` is next tab** (`]b` / `[b` also cycle
+  buffers). `<S-l>` is the same key as `L`, so the old "next buffer" mapping
+  on it never worked and was removed. More tab keys: `<leader>L1`…`9`,
+  `<leader>Ln/Lc/Lo`, built-in `gT`.
 - **Multi-cursor takes `<C-n>`, `<C-q>`, `ga` and visual `I` / `A`** (stock:
   line down, block select — use `<C-v>`, `:ascii`, first-line-only insert).
 - **`<Esc>`** in normal mode clears the search highlight (and extra cursors).
@@ -178,17 +189,30 @@ tree-sitter CLI 0.27.1, gcc 13, and every plugin at the commit in
   the config uses `vim.hl.hl_op` where it exists.)
 - All **38 plugins** restore from the lockfile; **27 treesitter parsers**
   compile and load on both versions.
-- **Keymap audit** (global + LSP / gitsigns buffer-local maps): every key in
-  KEYBINDINGS.md is registered; no new "prefix waits" were introduced, and the
-  0.4 s wait on LSP `gr` is gone (≈ 45 ms now, was ≈ 440 ms).
+- **Keymap audit** (global + LSP / gitsigns buffer-local maps): no new
+  "prefix waits" were introduced, and the 0.4 s wait on LSP `gr` is gone
+  (≈ 15–45 ms now, was ≈ 440 ms).
+- **Docs ↔ keymaps cross-check**, with KEYBINDINGS.md parsed by the
+  `<Space>?` code itself: every documented key exists as a live mapping in its
+  modes (apart from built-ins, keys that only exist while extra cursors are on
+  screen, and "0.12 only" keys on 0.13), and every keymap the config adds is
+  documented.
 - **Real-terminal tests** (tmux, keys typed at human speed, buffer state read
   back over RPC):
-  - 0.12.6 — multicursor.nvim: **43/43** checks; other keymaps: **33/33**.
+  - 0.12.6 — multicursor.nvim: **43/43** checks; other keymaps: **33/33**;
+    `<Space>?` (search, run a key from it): **3/3**.
   - 0.13-dev — same keys on Neovim's built-in cursors: **43/43**; other
-    keymaps: **33/33**.
+    keymaps: **33/33**; `<Space>?`: **3/3**.
 - **LSP / formatting end-to-end** with gopls and gofmt: attach, `gr`, `]r`
   reference jumps, format-on-save and its `<leader>uf` / `uF` toggles.
 - **Partial git staging**: visual `<leader>ga` stages only the selected line.
 - Not testable in the sandbox, because GitHub *release downloads* are blocked
   there: mason's server / tool installs and blink.cmp's prebuilt matcher
   (built from source with cargo instead — `fuzzy.implementation` is unchanged).
+
+Earlier run (June 2026, Neovim 0.12.1, with network access for mason): mason
+installed lua_ls and it auto-enabled and attached with blink capabilities;
+conform reformatted a buffer with mason's stylua; startup ≈ **189 ms**;
+every key in `KEYBINDINGS.md` was cross-checked against the live keymap table
+and `<Space>?` was driven in a real TUI (search, run a key, open the doc at a
+row).
